@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { getUsers, deleteUser } from '../services/api';
 import UserModal from './UserModal';
 import ServiceManagement from './ServiceManagement';
@@ -7,6 +7,7 @@ const Dashboard = ({ onLogout, currentUser }) => {
   const [users, setUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
 
   const loadUsers = async () => {
     try {
@@ -20,6 +21,26 @@ const Dashboard = ({ onLogout, currentUser }) => {
   useEffect(() => {
     loadUsers();
   }, []);
+
+  const filteredUsers = useMemo(() => {
+    const query = userSearchTerm.trim().toLowerCase();
+
+    if (!query) {
+      return users;
+    }
+
+    return users.filter((user) => {
+      const searchableText = [
+        user.id,
+        user.full_name,
+        user.email,
+        user.role,
+        user.is_active ? 'Activo' : 'Inactivo'
+      ].join(' ').toLowerCase();
+
+      return searchableText.includes(query);
+    });
+  }, [users, userSearchTerm]);
 
   const handleAddUser = () => {
     setEditingUser(null);
@@ -64,7 +85,7 @@ const Dashboard = ({ onLogout, currentUser }) => {
       </nav>
 
       <main className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div className="section-header">
           <h2>Gestión de Usuarios</h2>
           <button className="btn btn-secondary" onClick={handleAddUser}>
             + Nuevo Usuario
@@ -72,6 +93,27 @@ const Dashboard = ({ onLogout, currentUser }) => {
         </div>
 
         <div className="card">
+          <div className="table-toolbar user-toolbar">
+            <div>
+              <label htmlFor="user-search">Buscar usuarios</label>
+              <input
+                type="search"
+                id="user-search"
+                className="form-control"
+                placeholder="Nombre, correo, rol, estado..."
+                value={userSearchTerm}
+                onChange={(e) => setUserSearchTerm(e.target.value)}
+              />
+            </div>
+            <button type="button" className="btn btn-danger service-clear-btn" onClick={() => setUserSearchTerm('')}>
+              Limpiar
+            </button>
+          </div>
+
+          <div className="table-meta">
+            {filteredUsers.length} de {users.length} usuarios
+          </div>
+
           <div className="table-responsive">
             <table>
               <thead>
@@ -85,7 +127,7 @@ const Dashboard = ({ onLogout, currentUser }) => {
                 </tr>
               </thead>
               <tbody>
-                {users.map(user => (
+                {filteredUsers.map(user => (
                   <tr key={user.id}>
                     <td>{user.id}</td>
                     <td>{user.full_name}</td>
@@ -114,10 +156,10 @@ const Dashboard = ({ onLogout, currentUser }) => {
                     </td>
                   </tr>
                 ))}
-                {users.length === 0 && (
+                {filteredUsers.length === 0 && (
                   <tr>
                     <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>
-                      No hay usuarios registrados.
+                      No hay usuarios para mostrar.
                     </td>
                   </tr>
                 )}

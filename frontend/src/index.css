@@ -59,6 +59,61 @@ h1, h2, h3 {
   animation: fadeIn 0.5s ease-out;
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.table-toolbar,
+.service-toolbar {
+  display: grid;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+.service-toolbar {
+  grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(150px, 1fr)) auto;
+}
+
+.user-toolbar {
+  grid-template-columns: minmax(260px, 1fr) auto;
+}
+
+.table-toolbar label,
+.service-toolbar label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.service-clear-btn {
+  min-height: 51px;
+}
+
+.table-meta {
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 980px) {
+  .section-header,
+  .table-toolbar,
+  .service-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -233,7 +288,7 @@ h1, h2, h3 {
 
 /* Table Enhancements */
 .table-responsive {
-  overflow-x: hidden;
+  overflow-x: auto;
   border-radius: 12px;
 }
 

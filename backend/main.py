@@ -188,10 +188,14 @@ def create_service(service: schemas.ServiceCreate, current_user: dict = Depends(
 
 
 @app.get("/services/", response_model=List[schemas.ServiceResponse])
-def read_services(skip: int = 0, limit: int = 100):
+def read_services(skip: int = 0, limit: int = 100, current_user: dict = Depends(auth.get_current_user)):
+    params = {"select": "*", "offset": str(skip), "limit": str(limit)}
+    if current_user["role"] != "admin":
+        params["provider_id"] = f"eq.{current_user['id']}"
+
     response = supabase.get(
         "services",
-        params={"select": "*", "offset": str(skip), "limit": str(limit)},
+        params=params,
     )
     if response.status_code != 200:
         raise HTTPException(status_code=500, detail="Unable to load services")
@@ -200,10 +204,12 @@ def read_services(skip: int = 0, limit: int = 100):
 
 
 @app.get("/services/{service_id}", response_model=schemas.ServiceResponse)
-def read_service(service_id: int):
+def read_service(service_id: int, current_user: dict = Depends(auth.get_current_user)):
     service = fetch_service_by_id(service_id)
     if service is None:
         raise HTTPException(status_code=404, detail="Service not found")
+    if service["provider_id"] != current_user["id"] and current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized to view this service")
     return attach_provider_name(service)
 
 
