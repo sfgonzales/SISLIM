@@ -143,6 +143,7 @@ Variables de entorno necesarias en Render:
 SUPABASE_URL=tu-url-de-supabase
 SUPABASE_KEY=tu-clave-de-supabase
 SECRET_KEY=una-clave-secreta-para-jwt
+PYTHON_VERSION=3.12.7
 ```
 
 No configures `VITE_API_URL` en Render si frontend y backend viven en el mismo Web Service; el frontend usara rutas relativas como `/token` y `/users/`.
