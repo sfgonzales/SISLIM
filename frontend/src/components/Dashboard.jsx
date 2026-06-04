@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { getUsers, deleteUser } from '../services/api';
 import UserModal from './UserModal';
 import ServiceManagement from './ServiceManagement';
+import RequestManagement from './RequestManagement';
 
 const Dashboard = ({ onLogout, currentUser }) => {
   const [users, setUsers] = useState([]);
@@ -179,6 +180,10 @@ const Dashboard = ({ onLogout, currentUser }) => {
       {/* Services Management Section */}
       <div className="container">
         <ServiceManagement currentUser={currentUser} />
+      </div>
+
+      <div className="container">
+        <RequestManagement currentUser={currentUser} />
       </div>
     </div>
   );

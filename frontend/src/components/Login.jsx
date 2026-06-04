@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { login } from '../services/api';
 
 const Login = ({ onLoginSuccess }) => {
@@ -14,7 +15,7 @@ const Login = ({ onLoginSuccess }) => {
       const data = await login(email, password);
       localStorage.setItem('token', data.access_token);
       await onLoginSuccess();
-      navigate('/');
+      navigate('/app');
     } catch {
       localStorage.removeItem('token');
       setError('Credenciales invalidas. Por favor intente de nuevo.');
@@ -53,6 +54,9 @@ const Login = ({ onLoginSuccess }) => {
             Iniciar Sesion
           </button>
         </form>
+        <p className="auth-switch">
+          No tienes cuenta? <Link to="/register">Registrate</Link>
+        </p>
       </div>
     </div>
   );

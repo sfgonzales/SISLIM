@@ -53,6 +53,40 @@ class ServiceResponse(ServiceBase):
     status: str
     provider_id: int
     provider_name: str
+    rating: Optional[float] = 0
+    request_count: Optional[int] = 0
+    created_at: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class MarketplaceServiceResponse(ServiceResponse):
+    pass
+
+class ServiceRequestCreate(BaseModel):
+    service_id: int
+    message: str
+    requested_date: Optional[str] = None
+    address: Optional[str] = None
+    contact_phone: Optional[str] = None
+
+class ServiceRequestStatusUpdate(BaseModel):
+    status: str
+
+class ServiceRequestResponse(BaseModel):
+    id: int
+    service_id: int
+    requester_id: int
+    provider_id: int
+    message: str
+    requested_date: Optional[str] = None
+    address: Optional[str] = None
+    contact_phone: Optional[str] = None
+    status: str
+    service_title: str
+    requester_name: str
+    provider_name: str
+    created_at: Optional[str] = None
 
     class Config:
         from_attributes = True

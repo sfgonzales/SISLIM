@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getServices, createService, updateService, deleteService, updateServiceStatus } from '../services/api';
+import { getServices, updateServiceStatus } from '../services/api';
 
 const DescriptionCell = ({ text, onView }) => {
   const maxLength = 100;
@@ -32,36 +32,29 @@ const DescriptionCell = ({ text, onView }) => {
   );
 };
 
-const ServiceManagement = ({ currentUser }) => {
+const ApprovalManagement = ({ currentUser }) => {
   const [services, setServices] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingService, setEditingService] = useState(null);
-  const [viewingDescription, setViewingDescription] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [providerFilter, setProviderFilter] = useState('all');
+  const [viewingDescription, setViewingDescription] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    price: '',
-    category: 'Producto'
-  });
-
-  const isAdmin = currentUser?.role === 'admin';
 
   const loadServices = async () => {
     try {
       const data = await getServices();
       setServices(data);
+      setCurrentPage(1);
     } catch (error) {
       console.error('Error loading services:', error);
     }
   };
 
   useEffect(() => {
-    loadServices();
+    if (currentUser?.role === 'admin') {
+      loadServices();
+    }
   }, [currentUser]);
 
   const providers = useMemo(() => {
@@ -74,27 +67,27 @@ const ServiceManagement = ({ currentUser }) => {
     return Array.from(uniqueProviders, ([id, name]) => ({ id, name }));
   }, [services]);
 
-  const myServices = useMemo(() => {
-    return services.filter((service) => service.provider_id === currentUser?.id);
-  }, [services, currentUser]);
+  const pendingServices = useMemo(() => {
+    return services.filter((service) => service.status === 'Pendiente');
+  }, [services]);
 
   const filteredServices = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
 
-    return myServices.filter((service) => {
+    return pendingServices.filter((service) => {
       const matchesCategory = categoryFilter === 'all' || service.category === categoryFilter;
-      const matchesStatus = statusFilter === 'all' || service.status === statusFilter;
+      const matchesProvider = providerFilter === 'all' || String(service.provider_id) === providerFilter;
       const searchableText = [
         service.title,
         service.description,
         service.category,
-        service.status,
+        service.provider_name,
         String(service.price)
       ].join(' ').toLowerCase();
 
-      return matchesCategory && matchesStatus && (!query || searchableText.includes(query));
+      return matchesCategory && matchesProvider && (!query || searchableText.includes(query));
     });
-  }, [myServices, searchTerm, categoryFilter, statusFilter]);
+  }, [pendingServices, searchTerm, categoryFilter, providerFilter]);
 
   const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -103,72 +96,17 @@ const ServiceManagement = ({ currentUser }) => {
   const clearFilters = () => {
     setSearchTerm('');
     setCategoryFilter('all');
-    setStatusFilter('all');
-    setCurrentPage(1);
-  };
-
-  const handleAddService = () => {
-    setEditingService(null);
-    setFormData({ title: '', description: '', price: '', category: 'Producto' });
-    setIsModalOpen(true);
-  };
-
-  const handleEditService = (service) => {
-    setEditingService(service);
-    setFormData({
-      title: service.title,
-      description: service.description,
-      price: service.price,
-      category: service.category
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleDeleteService = async (serviceId) => {
-    if (window.confirm('Esta seguro de que desea eliminar este servicio?')) {
-      try {
-        await deleteService(serviceId);
-        loadServices();
-      } catch (error) {
-        console.error('Error deleting service:', error);
-      }
-    }
+    setProviderFilter('all');
   };
 
   const handleStatusChange = async (serviceId, status) => {
     try {
       await updateServiceStatus(serviceId, status);
-      loadServices();
+      await loadServices();
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('No se pudo actualizar el estado. Revise permisos.');
+      alert('No se pudo actualizar el estado.');
     }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const data = {
-        ...formData,
-        price: parseFloat(formData.price)
-      };
-
-      if (editingService) {
-        await updateService(editingService.id, data);
-      } else {
-        await createService(data);
-      }
-      setIsModalOpen(false);
-      loadServices();
-    } catch (error) {
-      console.error('Error saving service:', error);
-      alert('Error al guardar el servicio');
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePageChange = (pageNumber) => {
@@ -187,6 +125,7 @@ const ServiceManagement = ({ currentUser }) => {
     if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
       setCurrentPage(pageNum);
     } else if (!isNaN(pageNum) && pageNum >= 1) {
+      // Mostrar la última página si excede el máximo
       setCurrentPage(totalPages);
     }
   };
@@ -238,45 +177,46 @@ const ServiceManagement = ({ currentUser }) => {
     return buttons;
   };
 
+  if (currentUser?.role !== 'admin') {
+    return (
+      <div className="container">
+        <div className="card" style={{ textAlign: 'center', minHeight: '200px', display: 'grid', placeContent: 'center' }}>
+          <p>Solo los administradores pueden acceder a este panel.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ marginTop: '2rem' }}>
       <div className="section-header">
         <div>
-          <h2>Mis Ofertas</h2>
-          <p className="subtle-text">Administra tus productos y servicios, actualiza su estado y visualiza su historial.</p>
+          <h2>Aprobación de Productos/Servicios</h2>
+          <p className="subtle-text">Revisa y aprueba o rechaza los productos y servicios pendientes de otros usuarios.</p>
         </div>
-        <button className="btn btn-secondary" onClick={handleAddService}>
-          + Nuevo Servicio/Producto
-        </button>
       </div>
 
       <div className="card">
         <div className="service-toolbar">
           <div className="service-search">
-            <label htmlFor="service-search">Buscar</label>
+            <label htmlFor="approval-search">Buscar</label>
             <input
               type="search"
-              id="service-search"
+              id="approval-search"
               className="form-control"
-              placeholder="Titulo, descripcion, precio..."
+              placeholder="Titulo, descripcion, proveedor..."
               value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
           <div className="service-filter">
-            <label htmlFor="category-filter">Categoría</label>
+            <label htmlFor="approval-category">Categoría</label>
             <select
-              id="category-filter"
+              id="approval-category"
               className="form-control"
               value={categoryFilter}
-              onChange={(e) => {
-                setCategoryFilter(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => setCategoryFilter(e.target.value)}
             >
               <option value="all">Todas</option>
               <option value="Producto">Producto</option>
@@ -285,20 +225,19 @@ const ServiceManagement = ({ currentUser }) => {
           </div>
 
           <div className="service-filter">
-            <label htmlFor="status-filter">Estado</label>
+            <label htmlFor="approval-provider">Proveedor</label>
             <select
-              id="status-filter"
+              id="approval-provider"
               className="form-control"
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setCurrentPage(1);
-              }}
+              value={providerFilter}
+              onChange={(e) => setProviderFilter(e.target.value)}
             >
               <option value="all">Todos</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="Aprobado">Aprobado</option>
-              <option value="Rechazado">Rechazado</option>
+              {providers.map((provider) => (
+                <option key={provider.id} value={provider.id}>
+                  {provider.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -308,26 +247,24 @@ const ServiceManagement = ({ currentUser }) => {
         </div>
 
         <div className="table-meta">
-          {filteredServices.length} de {myServices.length} ofertas
+          {filteredServices.length} de {pendingServices.length} servicios pendientes de aprobación
         </div>
 
         <div className="table-responsive">
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Titulo</th>
-                <th>Descripcion</th>
+                <th>Título</th>
+                <th>Descripción</th>
                 <th>Precio</th>
-                <th>Categoria</th>
-                <th>Estado</th>
+                <th>Categoría</th>
+                <th>Proveedor</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {paginatedServices.map((service) => (
                 <tr key={service.id}>
-                  <td>{service.id}</td>
                   <td>{service.title}</td>
                   <td style={{ maxWidth: '250px' }}>
                     <DescriptionCell
@@ -337,31 +274,22 @@ const ServiceManagement = ({ currentUser }) => {
                   </td>
                   <td>${service.price}</td>
                   <td>{service.category}</td>
+                  <td>{service.provider_name}</td>
                   <td>
-                    <span
-                      style={{
-                        color: service.status === 'Aprobado' ? 'green' : service.status === 'Rechazado' ? 'red' : 'orange',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      {service.status}
-                    </span>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', flexWrap: 'nowrap', gap: '0.4rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'nowrap' }}>
                       <button
-                        className="btn btn-primary"
-                        style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}
-                        onClick={() => handleEditService(service)}
+                        className="btn"
+                        style={{ backgroundColor: '#219ebc', color: 'white', padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}
+                        onClick={() => handleStatusChange(service.id, 'Aprobado')}
                       >
-                        Editar
+                        Aprobar
                       </button>
                       <button
-                        className="btn btn-danger"
-                        style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}
-                        onClick={() => handleDeleteService(service.id)}
+                        className="btn"
+                        style={{ backgroundColor: '#fb8500', color: 'white', padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}
+                        onClick={() => handleStatusChange(service.id, 'Rechazado')}
                       >
-                        Eliminar
+                        Rechazar
                       </button>
                     </div>
                   </td>
@@ -369,8 +297,8 @@ const ServiceManagement = ({ currentUser }) => {
               ))}
               {paginatedServices.length === 0 && (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}>
-                    {filteredServices.length === 0 ? 'No hay servicios para este filtro.' : 'No hay servicios o productos para mostrar.'}
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>
+                    {filteredServices.length === 0 ? 'No hay servicios pendientes para esta búsqueda.' : 'No hay servicios pendientes.'}
                   </td>
                 </tr>
               )}
@@ -393,9 +321,9 @@ const ServiceManagement = ({ currentUser }) => {
             </div>
 
             <div className="pagination-input-group">
-              <label htmlFor="page-input-service">Ir a página:</label>
+              <label htmlFor="page-input">Ir a página:</label>
               <input
-                id="page-input-service"
+                id="page-input"
                 type="number"
                 min="1"
                 max={totalPages}
@@ -418,75 +346,10 @@ const ServiceManagement = ({ currentUser }) => {
         )}
       </div>
 
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>{editingService ? 'Editar Servicio/Producto' : 'Nuevo Servicio/Producto'}</h2>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-              <div className="form-group">
-                <label>Titulo:</label>
-                <input
-                  type="text"
-                  name="title"
-                  className="form-control"
-                  value={formData.title}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Descripcion:</label>
-                <textarea
-                  name="description"
-                  className="form-control"
-                  value={formData.description}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Precio:</label>
-                <input
-                  type="number"
-                  name="price"
-                  className="form-control"
-                  value={formData.price}
-                  onChange={handleChange}
-                  step="0.01"
-                  min="0"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Categoria:</label>
-                <select
-                  name="category"
-                  className="form-control"
-                  value={formData.category}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="Producto">Producto</option>
-                  <option value="Servicio">Servicio</option>
-                </select>
-              </div>
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-                  Guardar
-                </button>
-                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setIsModalOpen(false)}>
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {viewingDescription && (
         <div className="modal-overlay" onClick={() => setViewingDescription(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Descripcion del {viewingDescription.category}</h2>
+            <h2>Descripción del {viewingDescription.category}</h2>
             <div
               style={{
                 marginTop: '1rem',
@@ -514,4 +377,4 @@ const ServiceManagement = ({ currentUser }) => {
   );
 };
 
-export default ServiceManagement;
+export default ApprovalManagement;

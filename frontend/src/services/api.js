@@ -59,6 +59,11 @@ export const getServices = async () => {
   return response.data;
 };
 
+export const getPublicServices = async (limit = 6) => {
+  const response = await api.get('/public/services/', { params: { limit } });
+  return response.data;
+};
+
 export const createService = async (serviceData) => {
   const response = await api.post('/services/', serviceData);
   return response.data;
@@ -76,6 +81,33 @@ export const deleteService = async (serviceId) => {
 
 export const updateServiceStatus = async (serviceId, status) => {
   const response = await api.patch(`/services/${serviceId}/status`, { status });
+  return response.data;
+};
+
+// --- Sprint 3 APIs ---
+
+export const searchMarketplaceServices = async (params) => {
+  const response = await api.get('/marketplace/services/', { params });
+  return response.data;
+};
+
+export const createServiceRequest = async (requestData) => {
+  const response = await api.post('/service-requests/', requestData);
+  return response.data;
+};
+
+export const getMyServiceRequests = async () => {
+  const response = await api.get('/service-requests/mine/');
+  return response.data;
+};
+
+export const getIncomingServiceRequests = async () => {
+  const response = await api.get('/service-requests/incoming/');
+  return response.data;
+};
+
+export const updateServiceRequestStatus = async (requestId, status) => {
+  const response = await api.patch(`/service-requests/${requestId}/status`, { status });
   return response.data;
 };
 

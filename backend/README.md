@@ -70,6 +70,11 @@ uvicorn main:app --reload
 - `PUT /services/{service_id}`
 - `DELETE /services/{service_id}`
 - `PATCH /services/{service_id}/status`
+- `GET /marketplace/services/`
+- `POST /service-requests/`
+- `GET /service-requests/mine/`
+- `GET /service-requests/incoming/`
+- `PATCH /service-requests/{request_id}/status`
 
 ## Notas
 

@@ -147,3 +147,14 @@ PYTHON_VERSION=3.12.7
 ```
 
 No configures `VITE_API_URL` en Render si frontend y backend viven en el mismo Web Service; el frontend usara rutas relativas como `/token` y `/users/`.
+---
+
+## Sprint 3: Busqueda y Solicitud de Productos
+
+Este sprint agrega el flujo de demandantes y ofertantes:
+
+1. **Busqueda de Productos o Servicios:** el demandante busca ofertas aprobadas con texto, categoria y orden por mas recientes, mas utilizados o mejor calificados.
+2. **Solicitud de Producto o Servicio:** el demandante selecciona una oferta y registra mensaje, fecha deseada, direccion/zona y telefono de contacto.
+3. **Confirmacion de la Solicitud:** el ofertante visualiza las solicitudes recibidas para sus ofertas y puede aceptarlas o rechazarlas. El administrador puede visualizar todas.
+
+Antes de usar este sprint en Supabase, ejecuta el SQL actualizado de `backend/supabase-schema.sql` para crear la tabla `service_requests` y agregar el campo `rating` a `services`.
