@@ -923,11 +923,35 @@ tbody tr:last-child td {
   
   .app-navbar {
     flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .app-navbar .app-brand {
+    margin-bottom: 0.5rem;
   }
 
   .app-nav-links {
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 0.5rem;
+    margin: 1rem 0;
+  }
+  
+  .app-nav-links a {
+    flex: 1 1 auto;
+    min-width: 80px;
+    margin: 0;
+  }
+
+  .app-user-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
   }
   
   .public-nav {
@@ -943,7 +967,7 @@ tbody tr:last-child td {
 
   /* Cards, Forms & Modals */
   .card, .login-card, .home-hero-content {
-    padding: 1.5rem;
+    padding: 1.2rem;
   }
   
   .modal-content {
@@ -1012,3 +1036,13 @@ tbody tr:last-child td {
   }
 }
 
+/* Correcciones Globales para Prevención de Desbordamiento (Scroll Horizontal Indeseado) */
+body, #root {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+.card {
+  max-width: 100%;
+  overflow-x: hidden;
+}
