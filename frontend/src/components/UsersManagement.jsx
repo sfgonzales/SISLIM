@@ -3,7 +3,10 @@ import { getUsers, deleteUser } from '../services/api';
 import UserModal from './UserModal';
 
 const UsersManagement = ({ currentUser, onLogout }) => {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState(() => {
+    const saved = sessionStorage.getItem('usersList');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [userSearchTerm, setUserSearchTerm] = useState('');
@@ -14,7 +17,7 @@ const UsersManagement = ({ currentUser, onLogout }) => {
     try {
       const data = await getUsers();
       setUsers(data);
-      setCurrentPage(1);
+      sessionStorage.setItem('usersList', JSON.stringify(data));
     } catch (error) {
       console.error('Error loading users:', error);
     }

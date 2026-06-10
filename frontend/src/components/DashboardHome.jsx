@@ -30,11 +30,18 @@ const DashboardHome = ({ currentUser }) => {
         </Link>
 
         {currentUser?.role === 'admin' && (
-          <Link className="dashboard-card" to="/app/users">
-            <span>Administrador</span>
-            <h3>Gestión de usuarios</h3>
-            <p>Crea, edita y controla cuentas. Solo los administradores pueden acceder aquí.</p>
-          </Link>
+          <>
+            <Link className="dashboard-card" to="/app/users">
+              <span>Administrador</span>
+              <h3>Gestión de usuarios</h3>
+              <p>Crea, edita y controla cuentas. Solo los administradores pueden acceder aquí.</p>
+            </Link>
+            <Link className="dashboard-card" to="/app/approval">
+              <span>Administrador</span>
+              <h3>Aprobación de ofertas</h3>
+              <p>Revisa y aprueba o rechaza los servicios y productos publicados por los usuarios.</p>
+            </Link>
+          </>
         )}
       </div>
     </>

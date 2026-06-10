@@ -406,9 +406,11 @@ def read_my_service_requests(current_user: dict = Depends(auth.get_current_user)
 
 @app.get("/service-requests/incoming/", response_model=List[schemas.ServiceRequestResponse])
 def read_incoming_service_requests(current_user: dict = Depends(auth.get_current_user)):
-    params = {"select": "*", "order": "created_at.desc"}
-    if current_user["role"] != "admin":
-        params["provider_id"] = f"eq.{current_user['id']}"
+    params = {
+        "select": "*", 
+        "order": "created_at.desc",
+        "provider_id": f"eq.{current_user['id']}"
+    }
 
     response = supabase.get("service_requests", params=params)
     if response.status_code != 200:

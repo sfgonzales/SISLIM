@@ -33,7 +33,10 @@ const DescriptionCell = ({ text, onView }) => {
 };
 
 const ServiceManagement = ({ currentUser }) => {
-  const [services, setServices] = useState([]);
+  const [services, setServices] = useState(() => {
+    const saved = sessionStorage.getItem('myServicesList');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [viewingDescription, setViewingDescription] = useState(null);
@@ -55,6 +58,7 @@ const ServiceManagement = ({ currentUser }) => {
     try {
       const data = await getServices();
       setServices(data);
+      sessionStorage.setItem('myServicesList', JSON.stringify(data));
     } catch (error) {
       console.error('Error loading services:', error);
     }

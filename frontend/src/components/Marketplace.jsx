@@ -33,7 +33,10 @@ const DescriptionPreview = ({ text, onView }) => {
 };
 
 const Marketplace = ({ currentUser }) => {
-  const [offers, setOffers] = useState([]);
+  const [offers, setOffers] = useState(() => {
+    const saved = sessionStorage.getItem('marketplaceOffers');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortMode, setSortMode] = useState('recent');
@@ -58,7 +61,7 @@ const Marketplace = ({ currentUser }) => {
         sort: sortMode
       });
       setOffers(data);
-      setCurrentPage(1);
+      sessionStorage.setItem('marketplaceOffers', JSON.stringify(data));
     } catch (error) {
       console.error('Error loading marketplace:', error);
       setOffers([]);
@@ -239,7 +242,7 @@ const Marketplace = ({ currentUser }) => {
         </div>
 
         <div className="offer-grid">
-          {loading ? (
+          {loading && offers.length === 0 ? (
             <div className="card empty-offers">Cargando ofertas...</div>
           ) : paginatedOffers.length > 0 ? (
             paginatedOffers.map((offer) => (

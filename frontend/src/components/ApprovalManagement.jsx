@@ -33,7 +33,10 @@ const DescriptionCell = ({ text, onView }) => {
 };
 
 const ApprovalManagement = ({ currentUser }) => {
-  const [services, setServices] = useState([]);
+  const [services, setServices] = useState(() => {
+    const saved = sessionStorage.getItem('approvalServicesList');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [providerFilter, setProviderFilter] = useState('all');
@@ -45,7 +48,7 @@ const ApprovalManagement = ({ currentUser }) => {
     try {
       const data = await getServices();
       setServices(data);
-      setCurrentPage(1);
+      sessionStorage.setItem('approvalServicesList', JSON.stringify(data));
     } catch (error) {
       console.error('Error loading services:', error);
     }

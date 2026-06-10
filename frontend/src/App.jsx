@@ -13,9 +13,14 @@ import Marketplace from './components/Marketplace';
 import { getCurrentUser } from './services/api';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return !!localStorage.getItem('token') && !!localStorage.getItem('currentUser');
+  });
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem('currentUser');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [loading, setLoading] = useState(!localStorage.getItem('currentUser') && !!localStorage.getItem('token'));
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -25,11 +30,15 @@ function App() {
           const user = await getCurrentUser();
           setCurrentUser(user);
           setIsAuthenticated(true);
+          localStorage.setItem('currentUser', JSON.stringify(user));
         } catch {
           localStorage.removeItem('token');
+          localStorage.removeItem('currentUser');
           setCurrentUser(null);
           setIsAuthenticated(false);
         }
+      } else {
+        localStorage.removeItem('currentUser');
       }
       setLoading(false);
     };
@@ -40,10 +49,12 @@ function App() {
     const user = await getCurrentUser();
     setCurrentUser(user);
     setIsAuthenticated(true);
+    localStorage.setItem('currentUser', JSON.stringify(user));
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
     setCurrentUser(null);
     setIsAuthenticated(false);
   };

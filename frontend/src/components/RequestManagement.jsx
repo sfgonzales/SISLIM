@@ -8,8 +8,14 @@ const statusColor = (status) => {
 };
 
 const RequestManagement = ({ currentUser }) => {
-  const [myRequests, setMyRequests] = useState([]);
-  const [incomingRequests, setIncomingRequests] = useState([]);
+  const [myRequests, setMyRequests] = useState(() => {
+    const saved = sessionStorage.getItem('myRequestsList');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [incomingRequests, setIncomingRequests] = useState(() => {
+    const saved = sessionStorage.getItem('incomingRequestsList');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const loadRequests = async () => {
     try {
@@ -19,6 +25,8 @@ const RequestManagement = ({ currentUser }) => {
       ]);
       setMyRequests(mine);
       setIncomingRequests(incoming);
+      sessionStorage.setItem('myRequestsList', JSON.stringify(mine));
+      sessionStorage.setItem('incomingRequestsList', JSON.stringify(incoming));
     } catch (error) {
       console.error('Error loading requests:', error);
     }

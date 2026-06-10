@@ -27,9 +27,6 @@ CREATE TABLE IF NOT EXISTS public.services (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-ALTER TABLE public.services
-ADD COLUMN IF NOT EXISTS rating NUMERIC(3,2) NOT NULL DEFAULT 0;
-
 CREATE INDEX IF NOT EXISTS idx_services_provider_id ON public.services(provider_id);
 
 -- Tabla de solicitudes de servicios/productos

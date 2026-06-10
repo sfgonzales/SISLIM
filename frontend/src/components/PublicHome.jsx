@@ -52,7 +52,7 @@ const PublicHome = ({ isAuthenticated, currentUser, onLogout }) => {
   }, []);
 
   const handleRequestClick = () => {
-    navigate(isAuthenticated ? '/app/requests' : '/login');
+    navigate(isAuthenticated ? '/app/marketplace' : '/login');
   };
 
   return (
@@ -83,7 +83,7 @@ const PublicHome = ({ isAuthenticated, currentUser, onLogout }) => {
             <p>Encuentra productos y servicios de limpieza ofrecidos por usuarios validados, solicita lo que necesitas y coordina con el ofertante desde la plataforma.</p>
             <div className="hero-actions">
               <button className="btn btn-primary" onClick={handleRequestClick}>
-                Buscar Servicios
+                Buscar Productos y/o Servicios
               </button>
               {!isAuthenticated && (
                 <Link className="btn btn-secondary" to="/register">
@@ -95,11 +95,36 @@ const PublicHome = ({ isAuthenticated, currentUser, onLogout }) => {
         </div>
       </section>
 
-      <main className="container">
+      {/* --- Nueva sección: Cómo Funciona --- */}
+      <section className="container">
+        <div className="section-header" style={{ justifyContent: 'center', textAlign: 'center' }}>
+          <h2>¿Cómo funciona SISLIM?</h2>
+        </div>
+        <div className="features-grid">
+          <div className="feature-card">
+            <div className="feature-icon">🔍</div>
+            <h3>1. Explora el Catálogo</h3>
+            <p>Descubre una variedad de productos y servicios de limpieza validados por nuestros administradores para garantizar la mejor calidad.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">📅</div>
+            <h3>2. Envía tu Solicitud</h3>
+            <p>Contacta directamente al ofertante proponiendo una fecha, tu dirección y un mensaje con los detalles de lo que necesitas.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">✨</div>
+            <h3>3. Disfruta un Hogar Limpio</h3>
+            <p>El ofertante confirmará la solicitud en su panel. Una vez aceptada, ¡todo estará listo para que disfrutes de un ambiente impecable!</p>
+          </div>
+        </div>
+      </section>
+      {/* ---------------------------------- */}
+
+      <main className="container" style={{ paddingTop: '0' }}>
         <div className="section-header">
-          <h2>Ofertas disponibles</h2>
+          <h2>Ofertas destacadas</h2>
           <button className="btn btn-secondary" onClick={handleRequestClick}>
-            Ver catalogo
+            Ver catalogo completo
           </button>
         </div>
 
@@ -131,6 +156,21 @@ const PublicHome = ({ isAuthenticated, currentUser, onLogout }) => {
           )}
         </div>
       </main>
+
+      {/* --- Nuevo Footer --- */}
+      <footer className="public-footer">
+        <div className="footer-content">
+          <div className="footer-brand">
+            <h2>SISLIM</h2>
+            <p>Tu plataforma de confianza para la limpieza y mantenimiento del hogar. Conectamos talento con necesidades reales.</p>
+          </div>
+          <div className="footer-links">
+            <p>&copy; {new Date().getFullYear()} SISLIM. Todos los derechos reservados.</p>
+            <p className="subtle-text" style={{ color: 'rgba(255,255,255,0.6)' }}>Proyecto de Prototipo de Gestión de Usuarios.</p>
+          </div>
+        </div>
+      </footer>
+      {/* -------------------- */}
 
       {viewingDescription && (
         <div className="modal-overlay" onClick={() => setViewingDescription(null)}>
