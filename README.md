@@ -39,10 +39,11 @@ El desarrollo del sistema ha sido escalado mediante la metodología **Spec-Drive
 *   ✅ **Control de Calidad (Validación):** Todas las ofertas pasan por un proceso de revisión minucioso. Los administradores aprueban o rechazan las publicaciones.
 *   🔍 **Experiencia Dinámica:** Búsqueda y filtrado interactivo que permite navegar por el catálogo *sin recargar la página*.
 
-### 🤝 Sprint 3: Interacción y Solicitud de Servicios
+### 🤝 Sprint 3: Interacción, Solicitud y Calificación de Servicios
 *   🌍 **Catálogo Público:** Los usuarios "demandantes" pueden explorar libremente el catálogo público de ofertas.
 *   📅 **Sistema de Contratación:** Creación de solicitudes directas donde el cliente define la fecha deseada y su ubicación.
 *   📩 **Gestión de Pedidos:** Los ofertantes reciben notificaciones en su panel sobre nuevas solicitudes entrantes, pudiendo *Aceptarlas* o *Rechazarlas*.
+*   ⭐ **Calificaciones y Reseñas:** Al finalizar un servicio, los usuarios pueden dejar comentarios y otorgar una calificación (estrellas) al ofertante. Esto permite ordenar el catálogo por "Mejor Calificados" y fomenta la confianza en la comunidad.
 
 ---
 

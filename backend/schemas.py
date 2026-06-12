@@ -90,3 +90,20 @@ class ServiceRequestResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ServiceReviewBase(BaseModel):
+    rating: int
+    comment: Optional[str] = None
+
+class ServiceReviewCreate(ServiceReviewBase):
+    service_id: int
+
+class ServiceReviewResponse(ServiceReviewBase):
+    id: int
+    service_id: int
+    reviewer_id: int
+    reviewer_name: str
+    created_at: Optional[str] = None
+
+    class Config:
+        from_attributes = True

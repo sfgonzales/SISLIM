@@ -32,6 +32,16 @@ const DescriptionPreview = ({ text, onView }) => {
   );
 };
 
+const RatingBadge = ({ rating }) => {
+  const numRating = Number(rating) || 0;
+  if (numRating === 0) return <span className="rating-badge new">NUEVO</span>;
+  return (
+    <span className="rating-badge" title={`Calificación: ${numRating.toFixed(1)} de 5`}>
+      ⭐ {numRating.toFixed(1)}
+    </span>
+  );
+};
+
 const Marketplace = ({ currentUser }) => {
   const [offers, setOffers] = useState(() => {
     const saved = sessionStorage.getItem('marketplaceOffers');
@@ -247,27 +257,37 @@ const Marketplace = ({ currentUser }) => {
           ) : paginatedOffers.length > 0 ? (
             paginatedOffers.map((offer) => (
               <article className="offer-card" key={offer.id}>
-                <div className="offer-card-header">
-                  <span>{offer.category}</span>
-                  <strong>${offer.price}</strong>
+                <div className="offer-image-placeholder">
+                  <div className="generic-service-icon">
+                    {offer.category === 'Producto' ? '📦✨' : '🧹✨'}
+                  </div>
                 </div>
-                <h3>{offer.title}</h3>
-                <DescriptionPreview
-                  text={offer.description}
-                  onView={() => setViewingDescription(offer)}
-                />
-                <div className="offer-meta">
-                  <span>{offer.provider_name}</span>
-                  <span>{offer.request_count} solicitudes</span>
+                <div className="offer-content">
+                  <div className="offer-card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <span>{offer.category}</span>
+                      <RatingBadge rating={offer.rating} />
+                    </div>
+                    <strong>${offer.price}</strong>
+                  </div>
+                  <h3>{offer.title}</h3>
+                  <DescriptionPreview
+                    text={offer.description}
+                    onView={() => setViewingDescription(offer)}
+                  />
+                  <div className="offer-meta">
+                    <span>{offer.provider_name}</span>
+                    <span>{offer.request_count} solicitudes</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => openRequestModal(offer)}
+                    disabled={currentUser?.role === 'admin'}
+                  >
+                    {currentUser?.role === 'admin' ? 'No disponible para admin' : 'Solicitar'}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => openRequestModal(offer)}
-                  disabled={currentUser?.role === 'admin'}
-                >
-                  {currentUser?.role === 'admin' ? 'No disponible para admin' : 'Solicitar'}
-                </button>
               </article>
             ))
           ) : (

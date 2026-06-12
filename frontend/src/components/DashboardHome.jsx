@@ -12,18 +12,21 @@ const DashboardHome = ({ currentUser }) => {
 
       <div className="dashboard-grid">
         <Link className="dashboard-card" to="/app/marketplace">
+          <div className="card-icon">🛍️</div>
           <span>Catálogo</span>
           <h3>Explorar ofertas</h3>
           <p>Revisa productos y servicios aprobados, haz búsquedas por categoría y solicita lo que necesitas.</p>
         </Link>
 
         <Link className="dashboard-card" to="/app/requests">
+          <div className="card-icon">📩</div>
           <span>Solicitudes</span>
           <h3>Mis pedidos y respuesta</h3>
           <p>Observa tus solicitudes activas y responde a los interesados cuando ofreces servicios.</p>
         </Link>
 
         <Link className="dashboard-card" to="/app/services">
+          <div className="card-icon">💼</div>
           <span>Ofertas</span>
           <h3>Mis productos y servicios</h3>
           <p>Crea nuevas ofertas, actualiza descripciones y monitorea el estado de tus publicaciones.</p>
@@ -32,11 +35,13 @@ const DashboardHome = ({ currentUser }) => {
         {currentUser?.role === 'admin' && (
           <>
             <Link className="dashboard-card" to="/app/users">
+              <div className="card-icon">👥</div>
               <span>Administrador</span>
               <h3>Gestión de usuarios</h3>
               <p>Crea, edita y controla cuentas. Solo los administradores pueden acceder aquí.</p>
             </Link>
             <Link className="dashboard-card" to="/app/approval">
+              <div className="card-icon">✅</div>
               <span>Administrador</span>
               <h3>Aprobación de ofertas</h3>
               <p>Revisa y aprueba o rechaza los servicios y productos publicados por los usuarios.</p>

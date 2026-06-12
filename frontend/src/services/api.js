@@ -153,4 +153,15 @@ export const updateServiceRequestStatus = async (requestId, status) => {
   });
 };
 
+export const createServiceReview = async (reviewData) => {
+  return fetchWithAuth('/service-reviews/', {
+    method: 'POST',
+    body: JSON.stringify(reviewData)
+  });
+};
+
+export const getServiceReviews = async (serviceId) => {
+  return fetchWithAuth(`/services/${serviceId}/reviews/`);
+};
+
 export default { login, getCurrentUser };

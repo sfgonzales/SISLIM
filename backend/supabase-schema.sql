@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS public.users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Sprint 3
 CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
 
 -- Tabla de servicios/productos
@@ -47,3 +46,16 @@ CREATE INDEX IF NOT EXISTS idx_service_requests_service_id ON public.service_req
 CREATE INDEX IF NOT EXISTS idx_service_requests_requester_id ON public.service_requests(requester_id);
 CREATE INDEX IF NOT EXISTS idx_service_requests_provider_id ON public.service_requests(provider_id);
 CREATE INDEX IF NOT EXISTS idx_service_requests_status ON public.service_requests(status);
+
+-- Tabla de reseñas de servicios
+CREATE TABLE IF NOT EXISTS public.service_reviews (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  service_id BIGINT NOT NULL REFERENCES public.services(id) ON DELETE CASCADE,
+  reviewer_id BIGINT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  comment TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(service_id, reviewer_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_service_reviews_service_id ON public.service_reviews(service_id);

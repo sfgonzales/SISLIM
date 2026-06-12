@@ -32,6 +32,16 @@ const DescriptionCell = ({ text, onView }) => {
   );
 };
 
+const RatingBadge = ({ rating }) => {
+  const numRating = Number(rating) || 0;
+  if (numRating === 0) return <span className="rating-badge new" style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>NUEVO</span>;
+  return (
+    <span className="rating-badge" title={`Calificación: ${numRating.toFixed(1)} de 5`} style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>
+      ⭐ {numRating.toFixed(1)}
+    </span>
+  );
+};
+
 const ServiceManagement = ({ currentUser }) => {
   const [services, setServices] = useState(() => {
     const saved = sessionStorage.getItem('myServicesList');
@@ -332,7 +342,10 @@ const ServiceManagement = ({ currentUser }) => {
               {paginatedServices.map((service) => (
                 <tr key={service.id}>
                   <td>{service.id}</td>
-                  <td>{service.title}</td>
+                  <td>
+                    {service.title}
+                    <RatingBadge rating={service.rating} />
+                  </td>
                   <td style={{ maxWidth: '250px' }}>
                     <DescriptionCell
                       text={service.description}

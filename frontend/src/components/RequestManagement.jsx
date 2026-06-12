@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getMyServiceRequests, getIncomingServiceRequests, updateServiceRequestStatus } from '../services/api';
+import { getMyServiceRequests, getIncomingServiceRequests, updateServiceRequestStatus, createServiceReview } from '../services/api';
 
 const statusColor = (status) => {
   if (status === 'Aceptada') return 'green';
@@ -16,6 +16,9 @@ const RequestManagement = ({ currentUser }) => {
     const saved = sessionStorage.getItem('incomingRequestsList');
     return saved ? JSON.parse(saved) : [];
   });
+
+  const [reviewModal, setReviewModal] = useState({ open: false, request: null });
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
 
   const loadRequests = async () => {
     try {
@@ -45,6 +48,21 @@ const RequestManagement = ({ currentUser }) => {
     } catch (error) {
       console.error('Error updating request:', error);
       alert('No se pudo actualizar la solicitud.');
+    }
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await createServiceReview({
+        service_id: reviewModal.request.service_id,
+        rating: Number(reviewForm.rating),
+        comment: reviewForm.comment
+      });
+      alert('¡Gracias por tu reseña! La calificación ha sido guardada.');
+      setReviewModal({ open: false, request: null });
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Error al enviar reseña, tal vez ya lo calificaste.');
     }
   };
 
@@ -80,9 +98,21 @@ const RequestManagement = ({ currentUser }) => {
                     <td>{request.provider_name}</td>
                     <td>{request.requested_date || '-'}</td>
                     <td>
-                      <span style={{ color: statusColor(request.status), fontWeight: 'bold' }}>
-                        {request.status}
-                      </span>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                        <span style={{ color: statusColor(request.status), fontWeight: 'bold' }}>
+                          {request.status}
+                        </span>
+                        {request.status === 'Aceptada' && (
+                          <button 
+                            className="btn btn-secondary compact-btn"
+                            onClick={() => {
+                              setReviewForm({ rating: 5, comment: '' });
+                              setReviewModal({ open: true, request });
+                            }}>
+                            Calificar ⭐
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -139,7 +169,7 @@ const RequestManagement = ({ currentUser }) => {
                           </button>
                         </div>
                       ) : (
-                        <span className="subtle-text">{request.status}</span>
+                        <span className="subtle-text" style={{ fontSize: '1.2rem' }}>-</span>
                       )}
                     </td>
                   </tr>
@@ -156,6 +186,49 @@ const RequestManagement = ({ currentUser }) => {
           </div>
         </div>
       </div>
+
+      {reviewModal.open && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="modal-close" onClick={() => setReviewModal({ open: false, request: null })}>×</button>
+            <h2>Calificar Oferta</h2>
+            <p className="subtle-text">Califica tu experiencia con <strong>{reviewModal.request?.service_title}</strong></p>
+            
+            <form onSubmit={handleReviewSubmit} style={{ marginTop: '1.5rem' }}>
+              <div className="form-group">
+                <label>Calificación (Estrellas)</label>
+                <select 
+                  className="form-control" 
+                  value={reviewForm.rating} 
+                  onChange={(e) => setReviewForm({...reviewForm, rating: e.target.value})}
+                  required
+                >
+                  <option value="5">⭐⭐⭐⭐⭐ - Excelente</option>
+                  <option value="4">⭐⭐⭐⭐ - Muy Bueno</option>
+                  <option value="3">⭐⭐⭐ - Regular</option>
+                  <option value="2">⭐⭐ - Malo</option>
+                  <option value="1">⭐ - Pésimo</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Comentarios (Opcional)</label>
+                <textarea 
+                  className="form-control" 
+                  rows="3"
+                  value={reviewForm.comment}
+                  onChange={(e) => setReviewForm({...reviewForm, comment: e.target.value})}
+                  placeholder="Cuéntanos cómo fue el servicio..."
+                ></textarea>
+              </div>
+
+              <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
+                Enviar Reseña
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

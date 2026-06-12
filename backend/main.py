@@ -461,3 +461,61 @@ if FRONTEND_DIST.exists():
             return FileResponse(requested_path)
         return FileResponse(FRONTEND_DIST / "index.html")
 
+# --- Sprint 4: Calificaciones y Reseñas ---
+
+def attach_reviewer_name(review_data: dict) -> dict:
+    reviewer = fetch_user_by_id(review_data["reviewer_id"])
+    review_data["reviewer_name"] = reviewer["full_name"] if reviewer else "Usuario Anónimo"
+    return review_data
+
+@app.post("/service-reviews/", response_model=schemas.ServiceReviewResponse, status_code=status.HTTP_201_CREATED)
+def create_service_review(review_data: schemas.ServiceReviewCreate, current_user: dict = Depends(auth.get_current_user)):
+    service = fetch_service_by_id(review_data.service_id)
+    if service is None:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    if review_data.rating < 1 or review_data.rating > 5:
+        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+
+    payload = review_data.model_dump()
+    payload["reviewer_id"] = current_user["id"]
+
+    response = supabase.post(
+        "service_reviews",
+        json=payload,
+        headers={"Prefer": "return=representation"}
+    )
+    
+    if response.status_code == 409 or "duplicate key" in response.text.lower():
+        raise HTTPException(status_code=400, detail="Ya has calificado este servicio")
+    if response.status_code not in (201, 200):
+        raise HTTPException(status_code=500, detail="Unable to create review")
+    
+    created = response.json()
+    created_review = created[0] if isinstance(created, list) and created else created
+
+    # Actualizar promedio en services.rating
+    reviews_res = supabase.get("service_reviews", params={"select": "rating", "service_id": f"eq.{review_data.service_id}"})
+    if reviews_res.status_code == 200:
+        ratings = [r["rating"] for r in reviews_res.json()]
+        if ratings:
+            avg_rating = sum(ratings) / len(ratings)
+            supabase.patch(
+                "services",
+                params={"id": f"eq.{review_data.service_id}"},
+                json={"rating": round(avg_rating, 2)}
+            )
+
+    return attach_reviewer_name(created_review)
+
+@app.get("/services/{service_id}/reviews/", response_model=List[schemas.ServiceReviewResponse])
+def get_service_reviews(service_id: int):
+    response = supabase.get(
+        "service_reviews",
+        params={"select": "*", "service_id": f"eq.{service_id}", "order": "created_at.desc"}
+    )
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Unable to load reviews")
+    
+    return [attach_reviewer_name(review) for review in (response.json() or [])]
+

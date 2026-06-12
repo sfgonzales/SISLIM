@@ -4,7 +4,7 @@ const AppShell = ({ currentUser, onLogout, children }) => {
   return (
     <div>
       <nav className="navbar app-navbar">
-        <Link to="/" className="app-brand">SISLIM</Link>
+        <Link to="/" className="app-brand">✨ SISLIM 🫧</Link>
         <div className="app-nav-links">
           <NavLink to="/app" end>Panel</NavLink>
           <NavLink to="/app/marketplace">Catálogo</NavLink>

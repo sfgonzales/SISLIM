@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getPublicServices } from '../services/api';
-import heroImage from '../assets/hero.png';
 
 const DescriptionPreview = ({ text, onView }) => {
   const maxLength = 80;
@@ -34,8 +33,21 @@ const DescriptionPreview = ({ text, onView }) => {
   );
 };
 
+const RatingBadge = ({ rating }) => {
+  const numRating = Number(rating) || 0;
+  if (numRating === 0) return <span className="rating-badge new">NUEVO</span>;
+  return (
+    <span className="rating-badge" title={`Calificación: ${numRating.toFixed(1)} de 5`}>
+      ⭐ {numRating.toFixed(1)}
+    </span>
+  );
+};
+
 const PublicHome = ({ isAuthenticated, currentUser, onLogout }) => {
-  const [services, setServices] = useState([]);
+  const [services, setServices] = useState(() => {
+    const saved = sessionStorage.getItem('publicServicesList');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [viewingDescription, setViewingDescription] = useState(null);
   const navigate = useNavigate();
 
@@ -44,6 +56,7 @@ const PublicHome = ({ isAuthenticated, currentUser, onLogout }) => {
       try {
         const data = await getPublicServices(6);
         setServices(data);
+        sessionStorage.setItem('publicServicesList', JSON.stringify(data));
       } catch (error) {
         console.error('Error loading public services:', error);
       }
@@ -58,7 +71,7 @@ const PublicHome = ({ isAuthenticated, currentUser, onLogout }) => {
   return (
     <div className="public-page">
       <nav className="public-nav">
-        <Link to="/" className="brand-link">SISLIM</Link>
+        <Link to="/" className="brand-link">✨ SISLIM 🫧</Link>
         <div className="public-nav-actions">
           {isAuthenticated ? (
             <>
@@ -76,10 +89,15 @@ const PublicHome = ({ isAuthenticated, currentUser, onLogout }) => {
       </nav>
 
       <section className="home-hero">
-        <img src={heroImage} alt="Servicio de limpieza SISLIM" className="home-hero-image" />
+        <div className="hero-animated-background">
+          <div className="hero-shape shape-1"></div>
+          <div className="hero-shape shape-2"></div>
+          <div className="hero-shape shape-3"></div>
+          <div className="hero-shape shape-4"></div>
+        </div>
         <div className="home-hero-overlay">
           <div className="home-hero-content">
-            <h1>SISLIM</h1>
+            <h1>✨ SISLIM 🫧</h1>
             <p>Encuentra productos y servicios de limpieza ofrecidos por usuarios validados, solicita lo que necesitas y coordina con el ofertante desde la plataforma.</p>
             <div className="hero-actions">
               <button className="btn btn-primary" onClick={handleRequestClick}>
@@ -98,20 +116,20 @@ const PublicHome = ({ isAuthenticated, currentUser, onLogout }) => {
       {/* --- Nueva sección: Cómo Funciona --- */}
       <section className="container">
         <div className="section-header" style={{ justifyContent: 'center', textAlign: 'center' }}>
-          <h2>¿Cómo funciona SISLIM?</h2>
+          <h2>¿Cómo funciona ✨ SISLIM 🫧?</h2>
         </div>
         <div className="features-grid">
-          <div className="feature-card">
+          <div className="feature-card" style={{ animation: 'slideUpFade 0.6s ease-out forwards 0.2s', opacity: 0 }}>
             <div className="feature-icon">🔍</div>
             <h3>1. Explora el Catálogo</h3>
             <p>Descubre una variedad de productos y servicios de limpieza validados por nuestros administradores para garantizar la mejor calidad.</p>
           </div>
-          <div className="feature-card">
+          <div className="feature-card" style={{ animation: 'slideUpFade 0.6s ease-out forwards 0.4s', opacity: 0 }}>
             <div className="feature-icon">📅</div>
             <h3>2. Envía tu Solicitud</h3>
             <p>Contacta directamente al ofertante proponiendo una fecha, tu dirección y un mensaje con los detalles de lo que necesitas.</p>
           </div>
-          <div className="feature-card">
+          <div className="feature-card" style={{ animation: 'slideUpFade 0.6s ease-out forwards 0.6s', opacity: 0 }}>
             <div className="feature-icon">✨</div>
             <h3>3. Disfruta un Hogar Limpio</h3>
             <p>El ofertante confirmará la solicitud en su panel. Una vez aceptada, ¡todo estará listo para que disfrutes de un ambiente impecable!</p>
@@ -129,24 +147,38 @@ const PublicHome = ({ isAuthenticated, currentUser, onLogout }) => {
         </div>
 
         <div className="offer-grid">
-          {services.map((service) => (
-            <article className="offer-card" key={service.id}>
-              <div className="offer-card-header">
-                <span>{service.category}</span>
-                <strong>${service.price}</strong>
+          {services.map((service, idx) => (
+            <article
+              className="offer-card"
+              key={service.id}
+              style={{ animation: `slideUpFade 0.6s ease-out forwards ${0.1 * idx}s`, opacity: 0 }}
+            >
+              <div className="offer-image-placeholder">
+                <div className="generic-service-icon">
+                  {service.category === 'Producto' ? '📦✨' : '🧹✨'}
+                </div>
               </div>
-              <h3>{service.title}</h3>
-              <DescriptionPreview
-                text={service.description}
-                onView={() => setViewingDescription(service)}
-              />
-              <div className="offer-meta">
-                <span>{service.provider_name}</span>
-                <span>{service.request_count} solicitudes</span>
+              <div className="offer-content">
+                <div className="offer-card-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <span>{service.category}</span>
+                    <RatingBadge rating={service.rating} />
+                  </div>
+                  <strong>${service.price}</strong>
+                </div>
+                <h3>{service.title}</h3>
+                <DescriptionPreview
+                  text={service.description}
+                  onView={() => setViewingDescription(service)}
+                />
+                <div className="offer-meta">
+                  <span>{service.provider_name}</span>
+                  <span>{service.request_count} solicitudes</span>
+                </div>
+                <button className="btn btn-primary" onClick={handleRequestClick}>
+                  Solicitar
+                </button>
               </div>
-              <button className="btn btn-primary" onClick={handleRequestClick}>
-                Solicitar
-              </button>
             </article>
           ))}
           {services.length === 0 && (
